@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -16,9 +15,9 @@ import java.util.Set;
 @Table(name = "functions")
 public class Function {
     @Id
-    @Size(max = 10)
-    @Column(name = "id", nullable = false, length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Size(max = 150)
     @Column(name = "name", length = 150)
@@ -26,6 +25,6 @@ public class Function {
 
     @OneToMany(mappedBy = "function")
     @JsonIgnoreProperties({"function", "accounts"})
-    private List<Interact> interacts;
+    private Set<Interact> interacts = new LinkedHashSet<>();
 
 }

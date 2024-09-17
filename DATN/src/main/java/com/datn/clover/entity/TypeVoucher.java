@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -16,16 +15,16 @@ import java.util.Set;
 @Table(name = "type_voucher")
 public class TypeVoucher {
     @Id
-    @Size(max = 10)
-    @Column(name = "id", nullable = false, length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Size(max = 150)
     @Column(name = "name", length = 150)
     private String name;
 
     @OneToMany(mappedBy = "tvoucher")
-    @JsonIgnoreProperties({"bills", "account"})
-    private List<Voucher> vouchers;
+    @JsonIgnoreProperties({"tvoucher", "account", "bills"})
+    private Set<Voucher> vouchers = new LinkedHashSet<>();
 
 }

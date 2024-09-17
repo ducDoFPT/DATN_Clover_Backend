@@ -12,18 +12,19 @@ import lombok.Setter;
 @Table(name = "post_images")
 public class PostImage {
     @Id
-    @Size(max = 10)
-    @Column(name = "id", nullable = false, length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Size(max = 150)
     @Column(name = "name_image", length = 150)
     private String nameImage;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
-    @JsonIgnoreProperties({"account", "comments", "likes"
-            , "postImages", "shares", "storages"})
+    @JsonIgnoreProperties({"postImages", "account", "status"
+            , "comments", "likes", "shares"
+            , "storages"})
     private Post post;
 
 }

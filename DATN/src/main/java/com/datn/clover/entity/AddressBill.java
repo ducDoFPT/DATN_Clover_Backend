@@ -12,16 +12,14 @@ import lombok.Setter;
 @Table(name = "address_bill")
 public class AddressBill {
     @Id
-    @Size(max = 10)
-    @Column(name = "bill_id", nullable = false, length = 10)
-    private String billId;
+    @Column(name = "bill_id", nullable = false)
+    private Integer id;
 
     @MapsId
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "bill_id", nullable = false)
-    @JsonIgnoreProperties({"addressBill", "bills", "account"
-                            , "voucher", "detailBills", "detailBills"
-                            , "shipBills"})
+    @JsonIgnoreProperties({"addressBill", "account", "voucher"
+            , "status", "detailBills", "shipBills"})
     private Bill bills;
 
     @Size(max = 50)

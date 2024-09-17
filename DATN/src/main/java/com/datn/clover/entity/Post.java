@@ -7,9 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -18,16 +16,16 @@ import java.util.Set;
 @Table(name = "posts")
 public class Post {
     @Id
-    @Size(max = 10)
-    @Column(name = "id", nullable = false, length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Size(max = 150)
     @Column(name = "title", length = 150)
     private String title;
 
     @Column(name = "post_day")
-    private LocalDateTime postDay;
+    private Instant postDay;
 
     @Size(max = 225)
     @Column(name = "content", length = 225)
@@ -37,43 +35,45 @@ public class Post {
     private Integer numberLikes;
 
     @Size(max = 20)
-    @Column(name = "status", length = 20)
-    private String status;
-
-    @Size(max = 20)
     @Column(name = "stype_share", length = 20)
     private String stypeShare;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")
-    @JsonIgnoreProperties({"addresses", "account", "role"
-            , "notifications", "staff", "shop"
-            , "bills", "cart", "comments"
-            , "evaluates", "follows1", "follows2"
-            , "friends1", "friends2", "interacts"
-            , "posts", "promotions", "respondComments"
-            , "shares", "shipBills", "storages"
-            , "vouchers", "likes"})
+    @JsonIgnoreProperties({"role", "status", "notifications"
+            , "addresses", "bills", "carts"
+            , "comments", "evaluates", "interacts"
+            , "likes", "posts", "promotions"
+            , "respondComments", "shares", "shipBills"
+            , "shops", "staff", "storages"
+            , "vouchers", "accounts", "account"
+            , "acc", "follows1", "follows2"
+            , "friends1", "friends2"})
     private Account account;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
+    @JsonIgnoreProperties({"posts"})
+    private PostStatus status;
+
     @OneToMany(mappedBy = "post")
-    @JsonIgnoreProperties({"account", "post", "respondComments"})
-    private List<Comment> comments;
+    @JsonIgnoreProperties({"post", "account", "respondComments"})
+    private Set<Comment> comments = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "post")
     @JsonIgnoreProperties({"post", "account"})
-    private List<Like> likes;
+    private Set<Like> likes = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "post")
-    @JsonIgnoreProperties("post")
-    private List<PostImage> postImages;
-
-    @OneToMany(mappedBy = "post")
-    @JsonIgnoreProperties({"post", "account"})
-    private List<Share> shares;
+    @JsonIgnoreProperties({"post"})
+    private Set<PostImage> postImages = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "post")
     @JsonIgnoreProperties({"post", "account"})
-    private List<Storage> storages;
+    private Set<Share> shares = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "post")
+    @JsonIgnoreProperties({"post", "account"})
+    private Set<Storage> storages = new LinkedHashSet<>();
 
 }

@@ -12,9 +12,9 @@ import lombok.Setter;
 @Table(name = "detail_bills")
 public class DetailBill {
     @Id
-    @Size(max = 10)
-    @Column(name = "id", nullable = false, length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Size(max = 150)
     @Column(name = "prod_name", length = 150)
@@ -34,15 +34,14 @@ public class DetailBill {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prod_id")
-    @JsonIgnoreProperties({"detailBills", "shop", "prodType"
-                            , "promotion", "evaluates", "prodCarts"
-                            , "prodImages", "suppliers", "propertiesValues"})
+    @JsonIgnoreProperties({"promotion", "prodType", "shop"
+            , "detailBills", "evaluates", "prodCarts"
+            , "prodImages", "suppliers", "propertiesValues"})
     private Product prod;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "bill_id")
-    @JsonIgnoreProperties({"detailBills", "account", "voucher"
-                            , "addressBill", "shipBills"})
+    @JsonIgnoreProperties({"addressBill", "account", "voucher", "status", "detailBills", "shipBills"})
     private Bill bill;
 
 }

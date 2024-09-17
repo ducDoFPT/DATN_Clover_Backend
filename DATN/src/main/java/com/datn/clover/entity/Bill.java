@@ -8,7 +8,6 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -17,9 +16,9 @@ import java.util.Set;
 @Table(name = "bills")
 public class Bill {
     @Id
-    @Size(max = 10)
-    @Column(name = "id", nullable = false, length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Column(name = "buy_day")
     private LocalDate buyDay;
@@ -36,10 +35,6 @@ public class Bill {
     @Size(max = 50)
     @Column(name = "payment_methods", length = 50)
     private String paymentMethods;
-
-    @Size(max = 20)
-    @Column(name = "status", length = 20)
-    private String status;
 
     @Column(name = "discount_voucher")
     private Float discountVoucher;
@@ -58,31 +53,37 @@ public class Bill {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")
-    @JsonIgnoreProperties({"addresses", "account", "role"
-            , "notifications", "staff", "shop"
-            , "bills", "cart", "comments"
-            , "evaluates", "follows1", "follows2"
-            , "friends1", "friends2", "interacts"
-            , "posts", "promotions", "respondComments"
-            , "shares", "shipBills", "storages"
-            , "vouchers", "likes"})
+    @JsonIgnoreProperties({"role", "status", "notifications"
+            , "addresses", "bills", "carts"
+            , "comments", "evaluates", "interacts"
+            , "likes", "posts", "promotions"
+            , "respondComments", "shares", "shipBills"
+            , "shops", "staff", "storages"
+            , "vouchers", "accounts", "account"
+            , "acc", "follows1", "follows2"
+            , "friends1", "friends2"})
     private Account account;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "voucher_id")
-    @JsonIgnoreProperties({"bills", "account"})
+    @JsonIgnoreProperties({"bills", "account", "tvoucher"})
     private Voucher voucher;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
+    @JsonIgnoreProperties({"bills"})
+    private BillStatus status;
+
     @OneToOne(mappedBy = "bills")
-    @JsonIgnoreProperties("bills")
+    @JsonIgnoreProperties({"bills"})
     private AddressBill addressBill;
 
     @OneToMany(mappedBy = "bill")
     @JsonIgnoreProperties({"bill", "prod"})
-    private List<DetailBill> detailBills;
+    private Set<DetailBill> detailBills = new LinkedHashSet<>();
 
     @OneToOne(mappedBy = "bill")
-    @JsonIgnoreProperties({"bill", "bills", "acc"})
+    @JsonIgnoreProperties({"bill", "acc"})
     private ShipBill shipBills;
 
 }

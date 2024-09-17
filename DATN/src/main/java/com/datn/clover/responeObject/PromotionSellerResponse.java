@@ -1,22 +1,24 @@
 package com.datn.clover.responeObject;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
-@Setter
-@Getter
-@NoArgsConstructor
+@Data
+@JsonIgnoreProperties({"account","acc","accountId1", "accountId2","accounts"})
+
 public class PromotionSellerResponse {
-
     private String id;
+
     private String name;
+
     private Integer percentDiscount;
+
     private Instant startDay;
+
     private Instant endDay;
-    private String accountID;
 
 
 

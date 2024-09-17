@@ -7,9 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -18,37 +16,39 @@ import java.util.Set;
 @Table(name = "comments")
 public class Comment {
     @Id
-    @Size(max = 10)
-    @Column(name = "id", nullable = false, length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Size(max = 150)
     @Column(name = "content", length = 150)
     private String content;
 
     @Column(name = "comment_day")
-    private LocalDateTime commentDay;
+    private Instant commentDay;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "post_id")
-    @JsonIgnoreProperties({"account", "comments", "likes"
-                        , "postImages", "shares", "storages"})
+    @JsonIgnoreProperties({"postImages", "account", "status"
+            , "comments", "likes", "shares"
+            , "storages"})
     private Post post;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")
-    @JsonIgnoreProperties({"addresses", "account", "role"
-            , "notifications", "staff", "shop"
-            , "bills", "cart", "comments"
-            , "evaluates", "follows1", "follows2"
-            , "friends1", "friends2", "interacts"
-            , "posts", "promotions", "respondComments"
-            , "shares", "shipBills", "storages"
-            , "vouchers", "likes"})
+    @JsonIgnoreProperties({"role", "status", "notifications"
+            , "addresses", "bills", "carts"
+            , "comments", "evaluates", "interacts"
+            , "likes", "posts", "promotions"
+            , "respondComments", "shares", "shipBills"
+            , "shops", "staff", "storages"
+            , "vouchers", "accounts", "account"
+            , "acc", "follows1", "follows2"
+            , "friends1", "friends2"})
     private Account account;
 
     @OneToMany(mappedBy = "comment")
     @JsonIgnoreProperties({"comment", "account"})
-    private List<RespondComment> respondComments;
+    private Set<RespondComment> respondComments = new LinkedHashSet<>();
 
 }

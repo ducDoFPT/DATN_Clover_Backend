@@ -1,12 +1,12 @@
 package com.datn.clover.controllers.account;
 
-import com.datn.clover.Bean.Sellers.AccountSellerBean;
+import com.datn.clover.DTO.Sellers.AccountSellerBean;
 import com.datn.clover.JPAs.AccountSellerJPA;
 import com.datn.clover.JPAs.AddressSellerJPA;
 import com.datn.clover.entity.Account;
 import com.datn.clover.responeObject.AccountSellerResponse;
-import com.datn.clover.services.sellers.AccountSellerService;
-import com.datn.clover.services.sellers.UploadServices;
+import com.datn.clover.services.account.AccountSellerService;
+import com.datn.clover.services.sellers.UploadSellerServices;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -14,10 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Objects;
 import java.util.Optional;
+
 
 @RestController
 @RequestMapping("/api/home/account")
@@ -27,7 +26,7 @@ public class AccountHomeController {
     @Autowired
     private AccountSellerService accountService;
     @Autowired
-    private UploadServices uploadServices;
+    private UploadSellerServices uploadServices;
     @Autowired
     private AddressSellerJPA addressJPA;
     @Autowired
@@ -76,21 +75,10 @@ public class AccountHomeController {
             return ResponseEntity.badRequest().build();
         }
     }
-// update ảnh avatar account
-    @PutMapping("/updateAvatar/{token}")
-    public ResponseEntity<Void> updateAvatar(@RequestPart("avatar") MultipartFile avatar,@PathVariable("token") String username ) throws BindException {
-        try{
-            Optional<Account> account = accountJPA.getAccountByUsername(username);
-            if(account.isPresent() && !Objects.equals(account.get().getAvatar(), avatar.getOriginalFilename())){
-                String avatarName = uploadServices.uploadFile(avatar);
-                account.get().setAvatar(avatarName);
-                accountJPA.save(account.get());
-                return ResponseEntity.ok().build();
-            }
-            return ResponseEntity.ok().build();
-        }catch (Exception e){
-            return ResponseEntity.badRequest().build();
-        }
-    }
+//// update ảnh avatar account
+//    @PutMapping("/updateAvatar/{token}")
+//    public ResponseEntity<Void> updateAvatar(@RequestPart("avatar") MultipartFile avatar,@PathVariable("token") String username ) throws BindException {
+//        return setAvatar(avatar, username, accountJPA, uploadServices);
+//    }
 
 }

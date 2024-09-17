@@ -6,9 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -17,9 +15,9 @@ import java.util.Set;
 @Table(name = "suppliers")
 public class Supplier {
     @Id
-    @Size(max = 10)
-    @Column(name = "id", nullable = false, length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Size(max = 150)
     @Column(name = "name", length = 150)
@@ -37,10 +35,10 @@ public class Supplier {
     @JoinTable(name = "prod_sup",
             joinColumns = @JoinColumn(name = "sup_id"),
             inverseJoinColumns = @JoinColumn(name = "prod_id"))
-    @JsonIgnoreProperties({"detailBills", "shop", "prodType"
-            , "promotion", "evaluates", "prodCarts"
+    @JsonIgnoreProperties({"promotion", "prodType", "shop"
+            , "detailBills", "evaluates", "prodCarts"
             , "prodImages", "suppliers", "propertiesValues"})
-    private List<Product> products = new ArrayList<>();
+    private Set<Product> products = new LinkedHashSet<>();
 
     public void addProduct(Product product) {
         products.add(product);

@@ -7,9 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -18,9 +16,9 @@ import java.util.Set;
 @Table(name = "promotions")
 public class Promotion {
     @Id
-    @Size(max = 10)
-    @Column(name = "id", nullable = false, length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Size(max = 150)
     @Column(name = "name", length = 150)
@@ -30,27 +28,28 @@ public class Promotion {
     private Integer percentDiscount;
 
     @Column(name = "start_day")
-    private LocalDateTime startDay;
+    private Instant startDay;
 
     @Column(name = "end_day")
-    private LocalDateTime endDay;
+    private Instant endDay;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id")
-    @JsonIgnoreProperties({"addresses", "account", "role"
-            , "notifications", "staff", "shop"
-            , "bills", "cart", "comments"
-            , "evaluates", "follows1", "follows2"
-            , "friends1", "friends2", "interacts"
-            , "posts", "promotions", "respondComments"
-            , "shares", "shipBills", "storages"
-            , "vouchers", "likes"})
+    @JsonIgnoreProperties({"role", "status", "notifications"
+            , "addresses", "bills", "carts"
+            , "comments", "evaluates", "interacts"
+            , "likes", "posts", "promotions"
+            , "respondComments", "shares", "shipBills"
+            , "shops", "staff", "storages"
+            , "vouchers", "accounts", "account"
+            , "acc", "follows1", "follows2"
+            , "friends1", "friends2"})
     private Account account;
 
     @OneToMany(mappedBy = "promotion")
-    @JsonIgnoreProperties({"detailBills", "shop", "prodType"
-            , "promotion", "evaluates", "prodCarts"
+    @JsonIgnoreProperties({"promotion", "prodType", "shop"
+            , "detailBills", "evaluates", "prodCarts"
             , "prodImages", "suppliers", "propertiesValues"})
-    private List<Product> products;
+    private Set<Product> products = new LinkedHashSet<>();
 
 }

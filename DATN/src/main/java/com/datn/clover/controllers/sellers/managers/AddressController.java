@@ -1,20 +1,21 @@
 package com.datn.clover.controllers.sellers.managers;
 
-import com.datn.clover.Bean.Sellers.AddressBean;
+import com.datn.clover.DTO.Sellers.AddressSellerBean;
+import com.datn.clover.JPAs.AccountSellerJPA;
 import com.datn.clover.entity.Account;
 import com.datn.clover.entity.Address;
 import com.datn.clover.inter.AddressJPA;
-import com.datn.clover.services.sellers.AccountSellerService;
-import jakarta.validation.Valid;
+import com.datn.clover.mapper.AddressAccountmapper;
+import com.datn.clover.services.JwtService;
+import com.datn.clover.services.account.AddressAcountServices;
+import com.datn.clover.services.account.AccountSellerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.BindException;
-import org.springframework.validation.BindingResult;
+import org.springframework.validation.*;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/seller/address")
@@ -23,49 +24,57 @@ public class AddressController {
     AddressJPA addressJPA;
     @Autowired
     private AccountSellerService accountService;
+    @Autowired
+    private JwtService jwtService;
+    @Autowired
+    private AddressAcountServices addressAcountServices;
+    @Autowired
+    private AddressAccountmapper addressAccountmapper;
+    @Autowired
+    Validator validator;
+    @Autowired
+    private AccountSellerJPA accountSellerJPA;
 
     //handle error DTO
     @ExceptionHandler(BindException.class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public String handleBindException(BindException be) {
+    public Map<String, String> handleBindException(BindingResult be) {
         // Trả về message của lỗi đầu tiên
+        Map<String, String> errors = new HashMap<>();
         String errorMessage = "Request không hợp lệ";
-        if (be.getBindingResult().hasErrors()) {
-            errorMessage = be.getBindingResult().getAllErrors().getLast().getDefaultMessage();
+        errors.put("error", errorMessage);
+        if (be.hasErrors()) {
+            errorMessage = be.getAllErrors().getFirst().getDefaultMessage();
+            errors.put("message", errorMessage);
         }
-        return errorMessage;
+        return errors;
     }
-
     //create address
-    @PostMapping("/addAddress/{token}")
-    public Address addAddress(@RequestBody @Valid AddressBean addressBean, BindingResult error, @PathVariable("token") String username) throws BindException {
+    @PostMapping("/addAddress")
+    public ResponseEntity<?> addAddress(@RequestParam Map<String, String> params, @RequestHeader("Authorization") String token) throws BindException {
+        AddressSellerBean addressSellerBean = addressAccountmapper.toDTO(params);
+        BindingResult error = new BeanPropertyBindingResult(addressSellerBean, "addressSellerBean");
+        validator.validate(addressSellerBean, error);
         if (error.hasErrors()) {
-            throw new BindException(error);  // Ném ngoại lệ để được xử lý bởi handleBindException
+           throw  new BindException(error);
         }
         try {
-            Account account = accountService.getAccount(username);
-            Address address  = new Address();
-            address.setId(addressBean.getId());
-            address.setCity(addressBean.getCity());
-            address.setDistrict(addressBean.getDistrict());
-            address.setNation(addressBean.getNation());
-            address.setProvince(addressBean.getProvince());
-            address.setWards(addressBean.getWards());
-            address.setStreetnameNumber(addressBean.getStreetnameNumber());
-            address.setAccount(account);
-            return addressJPA.save(address);
+            Optional<Account> account = accountSellerJPA.getAccountByUsername(jwtService.accessToken(token));
+            if (account.isPresent()) {
+                return addressAcountServices.create(addressSellerBean,account);
+            }
+              return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         } catch (Exception e) {
-            e.printStackTrace();
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Fail to create!", e);
+            return ResponseEntity.badRequest().build();
         }
     }
     //delete address
-    @DeleteMapping("/deleteAddres/{token}")
-    public ResponseEntity<Void> deleteAddress(@RequestParam("id") String id, @PathVariable("token") String username) throws BindException {
-
+    @DeleteMapping("/deleteAddres")
+    public ResponseEntity<Void> deleteAddress(@RequestParam("id") String id, @RequestHeader("Authorization") String token) throws BindException {
         try {
-            Account account = accountService.getAccount(username);
-            if (account == null) {
+            Address address = addressJPA.findById(id).orElse(null);
+            Optional<Account> account = accountSellerJPA.getAccountByUsername(jwtService.accessToken(token));
+            if ( account.isEmpty() || !account.get().getId().equals(Objects.requireNonNull(address).getAccount().getId())) {
                 return ResponseEntity.notFound().build();
             }
             addressJPA.deleteById(id);
@@ -75,32 +84,23 @@ public class AddressController {
         return ResponseEntity.ok().build();
     }
     // update address
-    @PutMapping("/updateAddress/{token}")
-    public ResponseEntity<Address> updateAddress(@RequestBody @Valid AddressBean addressBean,BindingResult rs, @PathVariable("token") String username ) throws BindException {
-        if (rs.hasErrors()) {
-            throw new BindException(rs);
+    @PutMapping("/updateAddress")
+    public ResponseEntity<?> updateAddress(@RequestParam Map<String, String> params, @RequestHeader("Authorization") String username ) throws BindException {
+        AddressSellerBean addressSellerBean = addressAccountmapper.toDTO(params);
+        BindingResult errors = new BeanPropertyBindingResult(addressSellerBean, "addressSellerBean");
+        validator.validate(addressSellerBean, errors);
+        if (errors.hasErrors()) {
+            throw  new BindException(errors);
         }
         try {
-            Account account = accountService.getAccount(username);
-            if (account == null) {
-                return ResponseEntity.notFound().build();
+            Optional<Account> account = accountSellerJPA.getAccountByUsername(jwtService.accessToken(username));
+            if (account.isPresent() && account.get().getId().equals(account.get().getAddresses().getAccount().getId())) {
+                return addressAcountServices.update(addressSellerBean,account.get().getUsername());
             }
-            Optional<Address> address  = addressJPA.findById(addressBean.getId());
-
-            if (address.isPresent()) {
-                address.get().setId(addressBean.getId());
-                address.get().setCity(addressBean.getCity());
-                address.get().setDistrict(addressBean.getDistrict());
-                address.get().setNation(addressBean.getNation());
-                address.get().setProvince(addressBean.getProvince());
-                address.get().setWards(addressBean.getWards());
-                address.get().setStreetnameNumber(addressBean.getStreetnameNumber());
-                address.get().setAccount(account);
-                return ResponseEntity.ok(addressJPA.save(address.get()));
-            }
-            return ResponseEntity.notFound().build();
-        }catch (Exception e){
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(errors);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(errors);
         }
     }
 }

@@ -6,9 +6,7 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -17,9 +15,9 @@ import java.util.Set;
 @Table(name = "products")
 public class Product {
     @Id
-    @Size(max = 10)
-    @Column(name = "id", nullable = false, length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Size(max = 150)
     @Column(name = "name", length = 150)
@@ -37,12 +35,12 @@ public class Product {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prod_type")
-    @JsonIgnoreProperties("products")
+    @JsonIgnoreProperties({"products"})
     private TypeProduct prodType;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "shop_id")
-    @JsonIgnoreProperties({"products", "account", "staff"})
+    @JsonIgnoreProperties({"products", "account", "evaluatesFeedbacks", "staff"})
     private Shop shop;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -51,24 +49,24 @@ public class Product {
     private Promotion promotion;
 
     @OneToMany(mappedBy = "prod")
-    @JsonIgnoreProperties({"bill", "prod"})
-    private List<DetailBill> detailBills;
+    @JsonIgnoreProperties({"prod", "bill"})
+    private Set<DetailBill> detailBills = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "prod")
-    @JsonIgnoreProperties({"prod","acc"})
-    private List<Evaluate> evaluates;
+    @JsonIgnoreProperties({"prod", "acc", "evaluatesFeedbacks"})
+    private Set<Evaluate> evaluates = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "prod")
-    @JsonIgnoreProperties({"prod","cart"})
-    private List<ProdCart> prodCarts;
+    @JsonIgnoreProperties({"prod", "cart"})
+    private Set<ProdCart> prodCarts = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "prod")
-    @JsonIgnoreProperties("prod")
-    private List<ProdImage> prodImages;
+    @JsonIgnoreProperties({"prod"})
+    private Set<ProdImage> prodImages = new LinkedHashSet<>();
 
     @ManyToMany(mappedBy = "products")
-    @JsonIgnoreProperties("products")
-    private List<Supplier> suppliers = new ArrayList<>();
+    @JsonIgnoreProperties({"products"})
+    private Set<Supplier> suppliers = new LinkedHashSet<>();
 
     public void addSupplier(Supplier supplier) {
         suppliers.add(supplier);
@@ -81,8 +79,8 @@ public class Product {
     }
 
     @ManyToMany(mappedBy = "products")
-    @JsonIgnoreProperties({"products","properties"})
-    private List<PropertiesValue> propertiesValues = new ArrayList<>();
+    @JsonIgnoreProperties({"products", "properties"})
+    private Set<PropertiesValue> propertiesValues = new LinkedHashSet<>();
 
     public void addPropertiesValue(PropertiesValue propertiesValue) {
         propertiesValues.add(propertiesValue);

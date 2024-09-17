@@ -1,11 +1,10 @@
 package com.datn.clover.services.sellers;
 
-import com.datn.clover.Bean.Sellers.ShopSellerBean;
-import com.datn.clover.JPAs.ShopJPA;
+import com.datn.clover.DTO.Sellers.ShopSellerBean;
+import com.datn.clover.JPAs.ShopSellerJPA;
 import com.datn.clover.entity.Account;
-import com.datn.clover.entity.Product;
 import com.datn.clover.entity.Shop;
-import com.datn.clover.entity.Staff;
+import com.datn.clover.responeObject.ShopSellerResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,11 +15,26 @@ import java.util.Optional;
 @Transactional
 public class ShopSellerService {
     @Autowired
-    private ShopJPA shopRepository;
+    private ShopSellerJPA shopRepository;
+
+    public ShopSellerResponse setResponse(Shop shop) {
+        ShopSellerResponse res = new ShopSellerResponse();
+        res.setId(shop.getId());
+        res.setName(shop.getName());
+        res.setCity(shop.getCity());
+        res.setProvince(shop.getProvince());
+        res.setDistrict(shop.getDistrict());
+        res.setWards(shop.getWards());
+        res.setStreetnameNumber(shop.getStreetnameNumber());
+        res.setNation(shop.getNation());
+        res.setEvaluatesFeedbacks(shop.getEvaluatesFeedbacks());
+        res.setProducts(shop.getProducts());
+        return res;
+    }
+
 
     public Shop createShop(ShopSellerBean shop, Account seller) {
         Shop shopEntity = new Shop();
-        shopEntity.setId(shop.getId());
         shopEntity.setName(shop.getName());
         shopEntity.setAccount(seller);
         shopEntity.setCity(shop.getCity());

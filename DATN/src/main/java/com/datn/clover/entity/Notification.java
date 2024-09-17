@@ -6,10 +6,9 @@ import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.Instant;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -25,25 +24,36 @@ public class Notification {
     @Column(name = "notifi_day")
     private LocalDate notifiDay;
 
+    @Size(max = 150)
+    @Column(name = "title", length = 150)
+    private String title;
+
     @Size(max = 225)
     @Column(name = "content", length = 225)
     private String content;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "type_notifi")
-    @JsonIgnoreProperties(value = "notifications")
+    @JsonIgnoreProperties({"notifications"})
     private TypeNotification typeNotifi;
 
-    @ManyToMany(mappedBy = "notifications")
-    @JsonIgnoreProperties({"addresses", "account", "role"
-            , "notifications", "staff", "shop"
-            , "bills", "cart", "comments"
-            , "evaluates", "follows1", "follows2"
-            , "friends1", "friends2", "interacts"
-            , "posts", "promotions", "respondComments"
-            , "shares", "shipBills", "storages"
-            , "vouchers", "likes"})
-    private List<Account> accounts = new ArrayList<>();
+    @Column(name = "send_day")
+    private Instant sendDay;
+
+    @ManyToMany
+    @JoinTable(name = "acc_notifi",
+            joinColumns = @JoinColumn(name = "acc_id"),
+            inverseJoinColumns = @JoinColumn(name = "notifi_id"))
+    @JsonIgnoreProperties({"role", "status", "notifications"
+            , "addresses", "bills", "carts"
+            , "comments", "evaluates", "interacts"
+            , "likes", "posts", "promotions"
+            , "respondComments", "shares", "shipBills"
+            , "shops", "staff", "storages"
+            , "vouchers", "accounts", "account"
+            , "acc", "follows1", "follows2"
+            , "friends1", "friends2"})
+    private Set<Account> accounts = new LinkedHashSet<>();
 
     public void addAccount(Account account) {
         accounts.add(account);

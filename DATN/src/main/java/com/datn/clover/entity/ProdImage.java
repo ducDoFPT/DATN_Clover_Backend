@@ -12,9 +12,9 @@ import lombok.Setter;
 @Table(name = "prod_image")
 public class ProdImage {
     @Id
-    @Size(max = 10)
-    @Column(name = "id", nullable = false, length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Size(max = 150)
     @Column(name = "name", length = 150)
@@ -22,8 +22,8 @@ public class ProdImage {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prod_id")
-    @JsonIgnoreProperties({"detailBills", "shop", "prodType"
-            , "promotion", "evaluates", "prodCarts"
+    @JsonIgnoreProperties({"promotion", "prodType", "shop"
+            , "detailBills", "evaluates", "prodCarts"
             , "prodImages", "suppliers", "propertiesValues"})
     private Product prod;
 

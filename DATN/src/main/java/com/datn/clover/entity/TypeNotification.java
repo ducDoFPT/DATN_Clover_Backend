@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -16,9 +15,9 @@ import java.util.Set;
 @Table(name = "type_notification")
 public class TypeNotification {
     @Id
-    @Size(max = 10)
-    @Column(name = "id", nullable = false, length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Size(max = 50)
     @Column(name = "name", length = 50)
@@ -29,7 +28,7 @@ public class TypeNotification {
     private String note;
 
     @OneToMany(mappedBy = "typeNotifi")
-    @JsonIgnoreProperties({"accounts", "typeNotifi"})
-    private List<Notification> notifications;
+    @JsonIgnoreProperties({"typeNotifi", "accounts"})
+    private Set<Notification> notifications = new LinkedHashSet<>();
 
 }

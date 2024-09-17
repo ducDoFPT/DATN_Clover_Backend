@@ -14,6 +14,7 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties({"account","acc","accountId1", "accountId2","accounts"})
 public class AccountSellerResponse {
     private String fullname;
     private String email;

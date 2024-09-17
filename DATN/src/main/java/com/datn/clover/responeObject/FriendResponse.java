@@ -1,24 +1,14 @@
 package com.datn.clover.responeObject;
 
-import com.datn.clover.entity.Account;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.Data;
 
 import java.time.LocalDate;
-
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 public class FriendResponse {
-    private String id;
+    private Integer id;
 
     private LocalDate friendDay;
 
     private Boolean status;
-
-    private Account accountId1;
-
-    private Account accountId2;
 
 }

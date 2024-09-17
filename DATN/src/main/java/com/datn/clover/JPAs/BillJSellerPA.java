@@ -12,4 +12,6 @@ import java.util.List;
 public interface BillJSellerPA extends JpaRepository<Bill, String> {
     @Query(value = "select b.* from bills b inner join detail_bills d on b.id = d.bill_id inner join products p on p.id = d.prod_id inner join shops s on s.id = p.shop_id where s.id = :id",nativeQuery = true)
     List<Bill> getAllBillByShop(@Param("id") String id);
+    @Query("select b from Bill b where b.account.username = :username")
+    List<Bill> getAllBillByAccount(@Param("username") String username);
 }

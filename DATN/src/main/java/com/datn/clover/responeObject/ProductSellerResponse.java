@@ -1,16 +1,14 @@
 package com.datn.clover.responeObject;
 
-
+import com.datn.clover.entity.ProdImage;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-@Getter
-@Setter
-@NoArgsConstructor
+import java.util.List;
+
+@Data
+@JsonIgnoreProperties({"account","acc","accountId1", "accountId2","accounts"})
 public class ProductSellerResponse {
 
     private String id;
@@ -23,14 +21,8 @@ public class ProductSellerResponse {
 
     private String description;
 
-    private String prodTypeID;
+    @JsonIgnoreProperties({"prod"})
+    private List<ProdImage> prodImages;
 
-    private String shopID;
-
-    private String promotionID;
-
-    private final Set<MultipartFile> prodImages = new LinkedHashSet<>();
-
-    private String suppliers;
 
 }

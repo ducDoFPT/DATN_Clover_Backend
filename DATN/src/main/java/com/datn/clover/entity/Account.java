@@ -3,25 +3,22 @@ package com.datn.clover.entity;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.ArrayList;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
 @Setter
-@Data
 @Entity
 @Table(name = "accounts")
+@JsonIgnoreProperties({"password","username"})
 public class Account {
     @Id
-    @Size(max = 10)
-    @Column(name = "id", nullable = false, length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Size(max = 20)
     @Column(name = "username", length = 20)
@@ -50,17 +47,19 @@ public class Account {
     @Column(name = "avatar", length = 100)
     private String avatar;
 
-    @ManyToOne(fetch = FetchType.LAZY) //Dữ liệu không được tải trực tiếp, thực hiện được khi có yêu cầu
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "role_id")
-    @JsonIgnoreProperties("accounts")
+    @JsonIgnoreProperties({"accounts"})
     private Role role;
 
-    @ManyToMany
-    @JoinTable(name = "acc_notifi",
-            joinColumns = @JoinColumn(name = "acc_id"),
-            inverseJoinColumns = @JoinColumn(name = "notifi_id"))
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "status_id")
+    @JsonIgnoreProperties({"accounts"})
+    private AccountStatus status;
+
+    @ManyToMany(mappedBy = "accounts")
     @JsonIgnoreProperties({"accounts", "typeNotifi"})
-    private List<Notification> notifications = new ArrayList<>();
+    private Set<Notification> notifications = new LinkedHashSet<>();
 
     public void addNotification(Notification notification) {
         notifications.add(notification);
@@ -73,56 +72,45 @@ public class Account {
     }
 
     @OneToOne(mappedBy = "account")
-    @JsonIgnoreProperties("account")
+    @JsonIgnoreProperties({"account"})
     private Address addresses;
 
-    @OneToOne(mappedBy = "account")
-    @JsonIgnoreProperties({"account", "shop"})
-    private Staff staff;
-
-    @OneToOne(mappedBy = "account")
-    @JsonIgnoreProperties({"account", "products","staff"})
-    private Shop shop;
-
     @OneToMany(mappedBy = "account")
-    @JsonIgnoreProperties({"account","voucher","addressBill", "detailBills", "shipBills"})
-    private List<Bill> bills ;
+    @JsonIgnoreProperties({"addressBill", "account", "voucher"
+            , "status", "detailBills", "shipBills"})
+    private Set<Bill> bills = new LinkedHashSet<>();
 
     @OneToOne(mappedBy = "account")
     @JsonIgnoreProperties({"account", "prodCarts"})
-    private Cart cart;
+    private Cart carts;
 
     @OneToMany(mappedBy = "account")
     @JsonIgnoreProperties({"account", "post", "respondComments"})
-    private List<Comment> comments;
+    private Set<Comment> comments = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "acc")
-    @JsonIgnoreProperties({"acc", "prod"})
-    private List<Evaluate> evaluates;
+    @JsonIgnoreProperties({"prod", "acc", "evaluatesFeedbacks"})
+    private Set<Evaluate> evaluates = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "accountId1")
-    @JsonIgnoreProperties({"accountId1","follows1","accountId2"})
-    private List<Follow> follows1;
+    @JsonIgnoreProperties({"accountId1", "accountId2"})
+    private Set<Follow> follows1 = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "accountId2")
-    @JsonIgnoreProperties({"accountId1","follows2","accountId2"})
-    private List<Follow> follows2;
+    @JsonIgnoreProperties({"accountId1", "accountId2"})
+    private Set<Follow> follows2 = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "accountId1")
-    @JsonIgnoreProperties({"accountId1","friends1","accountId2"})
-    private List<Friend> friends1;
+    @JsonIgnoreProperties({"accountId1", "accountId2"})
+    private Set<Friend> friends1 = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "accountId2")
-    @JsonIgnoreProperties({"accountId2","friends2","accountId1"})
-    private List<Friend> friends2;
+    @JsonIgnoreProperties({"accountId1", "accountId2"})
+    private Set<Friend> friends2 = new LinkedHashSet<>();
 
-
-    @ManyToMany
-    @JoinTable(name = "interact_account",
-            joinColumns = @JoinColumn(name = "account_id"),
-            inverseJoinColumns = @JoinColumn(name = "interact_id"))
-    @JsonIgnoreProperties(value = "accounts")
-    private List<Interact> interacts = new ArrayList<>();
+    @ManyToMany(mappedBy = "accounts")
+    @JsonIgnoreProperties({"accounts", "function"})
+    private Set<Interact> interacts = new LinkedHashSet<>();
 
     public void addInteract(Interact interact) {
         interacts.add(interact);
@@ -136,36 +124,44 @@ public class Account {
 
     @OneToMany(mappedBy = "account")
     @JsonIgnoreProperties({"account", "post"})
-    private List<Like> likes;
+    private Set<Like> likes = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "account")
-    @JsonIgnoreProperties({"account", "comments", "likes"
-                        , "postImages", "shares", "storages"})
-    private List<Post> posts;
+    @JsonIgnoreProperties({"postImages", "account", "status"
+            , "comments", "likes", "shares"
+            , "storages"})
+    private Set<Post> posts = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "account")
     @JsonIgnoreProperties({"account", "products"})
-    private List<Promotion> promotions;
+    private Set<Promotion> promotions = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "account")
     @JsonIgnoreProperties({"account", "comment"})
-    private List<RespondComment> respondComments;
-
-    @OneToMany(mappedBy = "account")
-    @JsonIgnoreProperties({"account","post"})
-    private List<Share> shares;
-
-    @OneToMany(mappedBy = "acc")
-    @JsonIgnoreProperties({"acc","account","bill"})
-    private List<ShipBill> shipBills ;
+    private Set<RespondComment> respondComments = new LinkedHashSet<>();
 
     @OneToMany(mappedBy = "account")
     @JsonIgnoreProperties({"account", "post"})
-    private List<Storage> storages ;
+    private Set<Share> shares = new LinkedHashSet<>();
+
+    @OneToMany(mappedBy = "acc")
+    @JsonIgnoreProperties({"acc", "bill"})
+    private Set<ShipBill> shipBills = new LinkedHashSet<>();
+
+    @OneToOne(mappedBy = "account")
+    @JsonIgnoreProperties({"account", "evaluatesFeedbacks", "products", "staff"})
+    private Shop shops;
+
+    @OneToOne(mappedBy = "account")
+    @JsonIgnoreProperties({"account", "shop"})
+    private Staff staff;
 
     @OneToMany(mappedBy = "account")
-    @JsonIgnoreProperties({"account", "bills", "tvoucher"})
-    private List<Voucher> vouchers;
+    @JsonIgnoreProperties({"account", "post"})
+    private Set<Storage> storages = new LinkedHashSet<>();
 
+    @OneToMany(mappedBy = "account")
+    @JsonIgnoreProperties({"account", "tvoucher", "bills"})
+    private Set<Voucher> vouchers = new LinkedHashSet<>();
 
 }

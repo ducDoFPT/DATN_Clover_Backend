@@ -1,18 +1,23 @@
 package com.datn.clover.controllers.sellers.managers;
 
+import com.datn.clover.DTO.Sellers.AccountCreateDTO;
+import com.datn.clover.DTO.Sellers.AccountSellerBean;
 import com.datn.clover.JPAs.AccountSellerJPA;
-import com.datn.clover.JPAs.ShopJPA;
-import com.datn.clover.JPAs.StaffJPA;
+import com.datn.clover.JPAs.ShopSellerJPA;
+import com.datn.clover.JPAs.StaffSellerJPA;
 import com.datn.clover.entity.Account;
-import com.datn.clover.entity.Shop;
 import com.datn.clover.entity.Staff;
+import com.datn.clover.mapper.AccountSellerMapperImpl;
+import com.datn.clover.responeObject.AccountSellerResponse;
+import com.datn.clover.services.JwtService;
+import com.datn.clover.services.account.AccountSellerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.*;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/seller/staff")
@@ -20,58 +25,83 @@ public class StaffController {
     @Autowired
      AccountSellerJPA accountSellerJPA;
     @Autowired
-     ShopJPA shopJPA;
+    ShopSellerJPA shopJPA;
     @Autowired
-     StaffJPA staffJPA;
+    StaffSellerJPA staffJPA;
+    @Autowired
+    private JwtService jwtService;
+    @Autowired
+    private AccountSellerMapperImpl accountSellerMapperImpl;
+    @Autowired
+    Validator validator;
+    @Autowired
+    private AccountSellerService accountSellerService;
 
+    //handle error DTO
+    @ExceptionHandler(BindException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleBindException(BindingResult be) {
+        // Trả về message của lỗi đầu tiên
+        Map<String, String> errors = new HashMap<>();
+        String errorMessage = "Request không hợp lệ";
+        errors.put("error", errorMessage);
+        if (be.hasErrors()) {
+            errorMessage = be.getAllErrors().getFirst().getDefaultMessage();
+            errors.put("message", errorMessage);
+        }
+        return errors;
+    }
 
-
-    @GetMapping("/getStaffbyShop/{token}")
-    public List<Account> getStaffbyShop(@PathVariable String token) {
-        Optional<Account> account = accountSellerJPA.getAccountByUsername(token);
+    @GetMapping("/getStaffbyShop")
+    public List<Account> getStaffbyShop(@RequestHeader("Authorization") String token) {
+       try {
+        Optional<Account> account = accountSellerJPA.getAccountByUsername(jwtService.accessToken(token));
         if(account.isEmpty()){
             return null;
         }
-        if (account.get().getId().equals(account.get().getShop().getAccount().getId())){
-            List<Staff> accounts = account.get().getShop().getStaff();
+        if (account.get().getId().equals(account.get().getShops().getAccount().getId())){
+            Set<Staff> accounts =  account.get().getShops().getStaff();
             List<Account> staffs = new ArrayList<>();
             for (Staff staff : accounts) {
                 staffs.add(staff.getAccount());
             }
             return staffs;
         }
+       }catch (Exception e) {
+            return null;
+       }
         return null;
     }
-
-    @PostMapping("/create/{token}")
-    public ResponseEntity<Staff> create(@PathVariable String token, @RequestParam("id") String id, @RequestParam("StaffID") String idStaff) {
+    @PostMapping("/create")
+    public ResponseEntity<Staff> create(@RequestHeader("Authorization") String token, Map<String, String> params) {
         try {
-            Optional<Account> account = accountSellerJPA.getAccountByUsername(token);
-            Optional<Account> staffO = accountSellerJPA.findById(idStaff);
-            if(account.isEmpty() || staffO.isEmpty()){
-                return ResponseEntity.notFound().build();
+            Optional<Account> account = accountSellerJPA.getAccountByUsername(jwtService.accessToken(token));
+            AccountCreateDTO staff0 = accountSellerMapperImpl.paramsToAccountDTO(params);
+            BindingResult errors = new BeanPropertyBindingResult(staff0, "staff");
+            validator.validateObject(staff0);
+            if(account.isEmpty() || errors.hasErrors()){
+                throw new BindException( errors);
             }
-            if (account.get().getId().equals(account.get().getShop().getAccount().getId())){
+            if (account.get().getId().equals(account.get().getShops().getAccount().getId())){
+                Account account1 = accountSellerService.createAccount(staff0);
                 Staff staff = new Staff();
-                staff.setId(id);
-                staff.setAccount(staffO.get());
-                staff.setShop(account.get().getShop());
+                staff.setAccount(account1);
+                staff.setShop(account.get().getShops());
                 return ResponseEntity.ok(staffJPA.save(staff));
             }
             return ResponseEntity.badRequest().build();
         }catch (Exception e){
-            e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
     }
-    @DeleteMapping("/delete/{token}")
-    public boolean delete(@RequestParam("id") String id, @PathVariable String token) {
+    @DeleteMapping("/delete")
+    public boolean delete(@RequestParam("id") String id, @RequestHeader("Authorization") String token) {
         try {
-            Optional<Account> account = accountSellerJPA.getAccountByUsername(token);
+            Optional<Account> account = accountSellerJPA.getAccountByUsername(jwtService.accessToken(token));
             if(account.isEmpty()){
                 return false;
             }
-            if (account.get().getId().equals(account.get().getShop().getAccount().getId())){
+            if (account.get().getId().equals(account.get().getShops().getAccount().getId())){
                 staffJPA.deleteById(id);
             }
             return true;

@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
 @Getter
@@ -16,9 +15,9 @@ import java.util.Set;
 @Table(name = "properties")
 public class Property {
     @Id
-    @Size(max = 10)
-    @Column(name = "id", nullable = false, length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Size(max = 150)
     @Column(name = "name", length = 150)
@@ -30,6 +29,6 @@ public class Property {
 
     @OneToMany(mappedBy = "properties")
     @JsonIgnoreProperties({"properties", "products"})
-    private List<PropertiesValue> propertiesValues;
+    private Set<PropertiesValue> propertiesValues = new LinkedHashSet<>();
 
 }

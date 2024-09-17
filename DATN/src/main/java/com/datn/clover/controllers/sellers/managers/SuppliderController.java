@@ -1,30 +1,60 @@
 package com.datn.clover.controllers.sellers.managers;
 
-import com.datn.clover.Bean.Sellers.SupplierBean;
-import com.datn.clover.JPAs.SuppliderJPA;
+import com.datn.clover.DTO.Sellers.AccountSellerBean;
+import com.datn.clover.DTO.Sellers.SupplierBean;
+import com.datn.clover.JPAs.SuppliderSellerJPA;
 import com.datn.clover.entity.Supplier;
+import com.datn.clover.mapper.SupllierMapper;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.*;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/suppilder")
 public class SuppliderController {
     @Autowired
-    SuppliderJPA suppliderJPA;
+    SuppliderSellerJPA suppliderJPA;
+    @Autowired
+    private SupllierMapper supllierMapper;
+    @Autowired
+    Validator validator;
+
+    //handle error DTO
+    @ExceptionHandler(BindException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleBindException(BindingResult be) {
+        // Trả về message của lỗi đầu tiên
+        Map<String, String> errors = new HashMap<>();
+        String errorMessage = "Request không hợp lệ";
+        errors.put("error", errorMessage);
+        if (be.hasErrors()) {
+            errorMessage = be.getAllErrors().getFirst().getDefaultMessage();
+            errors.put("message", errorMessage);
+        }
+        return errors;
+    }
 
     @GetMapping
     public List<Supplier> getAllSuppliers() {
         return suppliderJPA.findAll();
     }
-
-    @PostMapping("/createSupplier/{Token}")
-    public ResponseEntity<Supplier> createSupplier(@RequestBody SupplierBean supplier, @PathVariable String Token) {
+    @PostMapping("/create")
+    public ResponseEntity<Supplier> createSupplier(@RequestParam Map<String, String> params, @RequestHeader("Authorization") String Token) throws BindException {
+        SupplierBean supplier = supllierMapper.supllierToDTO(params);
+        BindingResult errors = new BeanPropertyBindingResult(supplier, "supplier");
+        validator.validateObject(supplier);
+       if (errors.hasErrors()) {
+           throw  new BindException(errors);
+       }
         try {
             Supplier sup = new Supplier();
-            sup.setId(supplier.getId());
             sup.setName(supplier.getName());
             sup.setAddress(supplier.getAddress());
             sup.setPhone(supplier.getPhone());
@@ -32,15 +62,19 @@ public class SuppliderController {
         }catch (Exception e){
             return ResponseEntity.badRequest().build();
         }
-
     }
 
-    @PutMapping("/updateSupplier/{token}")
-    public ResponseEntity<Supplier> updateSupplier(@RequestBody SupplierBean supplier, @PathVariable String token) {
+    @PutMapping("/update")
+    public ResponseEntity<Supplier> updateSupplier(@RequestParam Map<String, String> params, @RequestHeader("Authorization") String token) throws BindException {
+        SupplierBean supplier = supllierMapper.supllierToDTO(params);
+        BindingResult errors = new BeanPropertyBindingResult(supplier, "supplier");
+        validator.validateObject(supplier);
+        if (errors.hasErrors()) {
+            throw  new BindException(errors);
+        }
         try {
             Supplier sup = suppliderJPA.findById(supplier.getId()).orElse(null);
             assert sup != null;
-            sup.setId(supplier.getId());
             sup.setName(supplier.getName());
             sup.setAddress(supplier.getAddress());
             sup.setPhone(supplier.getPhone());
@@ -49,8 +83,8 @@ public class SuppliderController {
             return ResponseEntity.badRequest().build();
         }
     }
-    @DeleteMapping("/delete/{token}")
-    public ResponseEntity<Void> deleteSupplier(@RequestParam("id") String id, @PathVariable String token) {
+    @DeleteMapping("/delete")
+    public ResponseEntity<Void> deleteSupplier(@RequestParam("id") String id, @RequestHeader("Authorization") String token) {
         try {
          suppliderJPA.deleteById(id);
          return ResponseEntity.ok().build();

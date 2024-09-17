@@ -1,8 +1,8 @@
 package com.datn.clover.controllers.account;
 
-import com.datn.clover.Bean.Sellers.AccountSellerBean;
+import com.datn.clover.DTO.admin.AccountBean;
 import com.datn.clover.JPAs.AccountSellerJPA;
-import com.datn.clover.JPAs.RoleJPA;
+import com.datn.clover.JPAs.RoleSellerJPA;
 import com.datn.clover.entity.Account;
 import com.datn.clover.entity.Role;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +14,9 @@ import java.util.Optional;
 public class RegisterController {
 
     private final AccountSellerJPA accountSellerJPA;
-    private final RoleJPA roleJPA;
+    private final RoleSellerJPA roleJPA;
 
-    public RegisterController(AccountSellerJPA accountSellerJPA, RoleJPA roleJPA) {
+    public RegisterController(AccountSellerJPA accountSellerJPA, RoleSellerJPA roleJPA) {
         this.accountSellerJPA = accountSellerJPA;
         this.roleJPA = roleJPA;
     }
@@ -39,7 +39,7 @@ public class RegisterController {
     }
 
     @PostMapping
-    public Account addClient(@RequestBody AccountSellerBean account) {
+    public Account addClient(@RequestBody AccountBean account) {
         Account client = new Account();
         client.setFullname(account.getFullname());
         client.setPhone(account.getPhone());

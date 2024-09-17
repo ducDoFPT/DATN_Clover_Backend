@@ -7,6 +7,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -14,9 +16,9 @@ import java.time.LocalDate;
 @Table(name = "evaluates")
 public class Evaluate {
     @Id
-    @Size(max = 10)
-    @Column(name = "id", nullable = false, length = 10)
-    private String id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id", nullable = false)
+    private Integer id;
 
     @Size(max = 150)
     @Column(name = "content", length = 150)
@@ -30,21 +32,26 @@ public class Evaluate {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "prod_id")
-    @JsonIgnoreProperties({"detailBills", "shop", "prodType"
-            , "promotion", "evaluates", "prodCarts"
+    @JsonIgnoreProperties({"promotion", "prodType", "shop"
+            , "detailBills", "evaluates", "prodCarts"
             , "prodImages", "suppliers", "propertiesValues"})
     private Product prod;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "acc_id")
-    @JsonIgnoreProperties({"addresses", "account", "role"
-            , "notifications", "staff", "shop"
-            , "bills", "cart", "comments"
-            , "evaluates", "follows1", "follows2"
-            , "friends1", "friends2", "interacts"
-            , "posts", "promotions", "respondComments"
-            , "shares", "shipBills", "storages"
-            , "vouchers", "likes"})
+    @JsonIgnoreProperties({"role", "status", "notifications"
+            , "addresses", "bills", "carts"
+            , "comments", "evaluates", "interacts"
+            , "likes", "posts", "promotions"
+            , "respondComments", "shares", "shipBills"
+            , "shops", "staff", "storages"
+            , "vouchers", "accounts", "account"
+            , "acc", "follows1", "follows2"
+            , "friends1", "friends2"})
     private Account acc;
+
+    @OneToMany(mappedBy = "evaluate")
+    @JsonIgnoreProperties({"evaluate", "shop"})
+    private Set<EvaluatesFeedback> evaluatesFeedbacks = new LinkedHashSet<>();
 
 }

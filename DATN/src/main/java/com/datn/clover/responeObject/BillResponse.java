@@ -1,21 +1,16 @@
 package com.datn.clover.responeObject;
 
-import com.datn.clover.entity.Account;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.datn.clover.entity.*;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Data
 public class BillResponse {
-
-    private String id;
-
+    private Integer id;
 
     private LocalDate buyDay;
 
@@ -27,23 +22,37 @@ public class BillResponse {
 
     private String paymentMethods;
 
-    private String status;
-
     private Float discountVoucher;
 
     private String fullname;
 
     private String phone;
+
     private String email;
 
+    @JsonIgnoreProperties({"role", "status", "notifications"
+            , "addresses", "bills", "carts"
+            , "comments", "evaluates", "interacts"
+            , "likes", "posts", "promotions"
+            , "respondComments", "shares", "shipBills"
+            , "shops", "staff", "storages"
+            , "vouchers", "accounts", "account"
+            , "acc", "follows1", "follows2"
+            , "friends1", "friends2", "username", "password"})
     private Account account;
 
-    private VoucherResponse voucher;
+    @JsonIgnoreProperties({"bills", "account", "tvoucher"})
+    private Voucher voucher;
+    @JsonIgnoreProperties({"bills"})
+    private BillStatus status;
 
-    private AddressBillResponse addressBill;
+    @JsonIgnoreProperties({"bills"})
+    private AddressBill addressBill;
 
-    private Set<DetailBillResponse> detailBills = new LinkedHashSet<>();
+    @JsonIgnoreProperties({"bill", "prod"})
+    private Set<DetailBill> detailBills = new LinkedHashSet<>();
 
-    private ShipBillResponse shipBills;
+    @JsonIgnoreProperties({"bill", "acc"})
+    private ShipBill shipBills;
 
 }
